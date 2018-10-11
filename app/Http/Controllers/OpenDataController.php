@@ -51,13 +51,13 @@ class OpenDataController extends Controller {
 
         if ($checkIfConditionExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $dengueFatalityRate = DB::table('fatalityRate')
             ->where('date', '=', $request->year)
             ->first();
 
-        return ['result' => 'true', 'number' => $dengueFatalityRate->fatalityRate];
+        return ['result' => 'true', 'dengueFatalityRate' => $dengueFatalityRate->fatalityRate];
     }
 
     public function rainfall(Request $request)
@@ -86,7 +86,7 @@ class OpenDataController extends Controller {
         }
         else
         {
-            return ["result" => "false", "memo" => "Provided condition is not enough"];
+            return ["result" => "false", "memo" => "Provided condition is incorrect"];
         }
     }
 
@@ -286,7 +286,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $monthDistrictSumRainfall = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -295,7 +295,7 @@ class OpenDataController extends Controller {
             ->groupBy(DB::raw("year(date)", "month(date)"))
             ->sum('rainfall');
 
-        return ['result' => 'true', 'number' => $monthDistrictSumRainfall];
+        return ['result' => 'true', 'monthlyDistrictSumRainfall' => $monthDistrictSumRainfall];
     }
 
     private function yearDistrictSumRainfall(Request $request)
@@ -312,7 +312,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $yearDistrictSumRainfall = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -320,7 +320,7 @@ class OpenDataController extends Controller {
             ->groupBy(DB::raw("year(date)"))
             ->sum('rainfall');
 
-        return ['result' => 'true', 'number' => $yearDistrictSumRainfall];
+        return ['result' => 'true', 'yearlyDistrictSumRainfall' => $yearDistrictSumRainfall];
     }
 
     private function monthSumRainfall(Request $request)
@@ -337,7 +337,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $monthSumRainfallForAllOfTheDistricts = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -358,7 +358,7 @@ class OpenDataController extends Controller {
         $monthSumRainfall = $monthSumRainfallForAllOfTheDistricts / $districtNumberInDesignatedMonth;
 
 
-        return ['result' => 'true', 'number' => $monthSumRainfall];
+        return ['result' => 'true', 'monthlySumRainfall' => $monthSumRainfall];
     }
 
     private function yearSumRainfall(Request $request)
@@ -373,7 +373,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $yearSumRainfallForAllOfTheDistricts = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -389,10 +389,10 @@ class OpenDataController extends Controller {
             ->groupBy(DB::raw("day(date)"))
             ->count('district');
 
-        $monthSumRainfall = $yearSumRainfallForAllOfTheDistricts / $districtNumberInDesignatedYear;
+        $yearlySumRainfall = $yearSumRainfallForAllOfTheDistricts / $districtNumberInDesignatedYear;
 
 
-        return ['result' => 'true', 'number' => $monthSumRainfall];
+        return ['result' => 'true', 'yearlySumRainfall' => $yearlySumRainfall];
     }
 
     private function dengueDistrictMonthNumber(Request $request)
@@ -411,7 +411,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $dengueDistrictMonthNumber = DB::table('dengue')
             ->whereYear('date', $request->year)
@@ -420,7 +420,7 @@ class OpenDataController extends Controller {
             ->groupBy(DB::raw("year(date)", "month(date)", 'district'))
             ->count('district');
 
-        return ['result' => 'true', 'number' => $dengueDistrictMonthNumber];
+        return ['result' => 'true', 'monthlyDengueDistrictNumber' => $dengueDistrictMonthNumber];
     }
 
     private function dengueMonthNumber(Request $request)
@@ -437,7 +437,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $dengueMonthNumber = DB::table('dengue')
             ->whereYear('date', $request->year)
@@ -462,7 +462,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $dengueDistrictYearNumber = DB::table('dengue')
             ->whereYear('date', $request->year)
@@ -485,7 +485,7 @@ class OpenDataController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t existt'];
+            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
         $dengueYearNumber = DB::table('dengue')
             ->whereYear('date', $request->year)
