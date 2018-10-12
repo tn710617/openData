@@ -35,17 +35,21 @@ class dengueController extends Controller {
 
     private function dengueDistrictDailyNumber(Request $request)
     {
-
-        $checkIfDataExists = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->whereMonth('date', $request->month)
-            ->where('district', '=', $request->district)
-            ->exists();
-
-        if ($checkIfDataExists == false)
-        {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
-        }
+        $this->validate(request(), [
+            'year'     => 'required',
+            'month'    => 'required',
+            'district' => 'required'
+        ]);
+//        $checkIfDataExists = DB::table('dengue')
+//            ->whereYear('date', $request->year)
+//            ->whereMonth('date', $request->month)
+//            ->where('district', '=', $request->district)
+//            ->exists();
+//
+//        if ($checkIfDataExists == false)
+//        {
+//            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+//        }
         $dengueDistrictYearNumber = DB::table('dengue')
             ->select(DB::raw('day(date) date, count(district) number'))
             ->whereYear('date', $request->year)
@@ -54,10 +58,18 @@ class dengueController extends Controller {
             ->groupBy(DB::raw('year(date), month(date), day(date)'))
             ->get()->toArray();
 
+
+        $toBeShownAbsentData = 'Required data was not found';
+        $confirmedMissingData = 0;
+
+        $now = Carbon::now();
+        $currentMonth = $now->month;
+        $currentYear = $now->year;
+        $currentDay = $now->day;
+
         $finalOutput = array();
-        $toBeShownAbsentData = 'required data was not found';
         $howManyDaysInAMonth = cal_days_in_month(CAL_GREGORIAN, $request->month, $request->year);
-        for ($daysInAMonth = 1; $daysInAMonth <= $howManyDaysInAMonth; $daysInAMonth ++)
+        for ($daysInAMonth = 1; $daysInAMonth < ($howManyDaysInAMonth + 1); $daysInAMonth ++)
         {
             foreach ($dengueDistrictYearNumber as $data)
             {
@@ -65,12 +77,13 @@ class dengueController extends Controller {
                 {
                     $finalOutput[$daysInAMonth] = $data->number;
                 }
-                if (!isset($finalOutput[$daysInAMonth]))
-                {
-                    $finalOutput[$daysInAMonth] = $toBeShownAbsentData;
-                }
-
             }
+            if (!isset($finalOutput[$daysInAMonth]))
+            {
+                $finalOutput[$daysInAMonth] = ($request->year < 2015) || ($request->year > $currentYear) ||
+                ((($request->month > $currentMonth) && ($request->year == $currentYear) && ($daysInAMonth > $currentDay))) ? $toBeShownAbsentData : $confirmedMissingData;
+            }
+
         }
 
         return ['result' => 'true', 'data' => $finalOutput];
@@ -171,8 +184,8 @@ class dengueController extends Controller {
             }
             if (!isset($finalOutput[$monthsInAYear]))
             {
-                $finalOutput[$monthsInAYear] = ((($request->year < 2015) || (($request->year >= $currentYear) &&
-                        ($monthsInAYear > $currentMonth)))) ? $toBeShownAbsentData : $confirmedMissingData;
+                $finalOutput[$monthsInAYear] = ($request->year < 2015) || ($request->year > $currentYear) ||
+                ((($monthsInAYear > $currentMonth) && ($request->year == $currentYear))) ? $toBeShownAbsentData : $confirmedMissingData;
             }
 
         }
