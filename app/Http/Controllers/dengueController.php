@@ -12,15 +12,19 @@ class dengueController extends Controller {
         $year = $request->year;
         $month = $request->month;
         $district = $request->district;
+        $fatality = $request->type;
+
         if (isset($year) && !isset($month) && isset($district))
         {
             return $this->dengueDistrictMonthNumber($request);
-        } elseif (isset($year) && isset($month) && !isset($district))
+        }
+        elseif (isset($year) && ($fatality == 'fatality'))
         {
-            return $this->dengueMonthNumber($request);
-        } elseif (isset($year) && isset($district) && !isset($month))
+            return $this->dengueFatalityRate($request);
+        }
+        elseif (isset($year) && (isset($month)) && (isset($district)))
         {
-            return $this->dengueDistrictYearNumber($request);
+            return $this->dengueDistrictDailyNumber($request);
         } elseif (isset($year) && (!isset($month)) && (!isset($district)))
         {
             return $this->dengueYearNumber($request);
@@ -28,6 +32,100 @@ class dengueController extends Controller {
         {
             return ["result" => "false", "data" => "Provided condition is incorrect"];
         }
+    }
+
+    private function dengueDistrictDailyNumber(Request $request)
+    {
+
+        $checkIfDataExists = DB::table('dengue')
+            ->whereYear('date', $request->year)
+            ->whereMonth('date', $request->month)
+            ->where('district', '=', $request->district)
+            ->exists();
+
+        if ($checkIfDataExists == false)
+        {
+            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+        }
+        $dengueDistrictYearNumber = DB::table('dengue')
+            ->select(DB::raw('day(date) date, count(district) number'))
+            ->whereYear('date', $request->year)
+            ->whereMonth('date', $request->month)
+            ->where('district', $request->district)
+            ->groupBy(DB::raw('year(date), month(date), day(date)'))
+            ->get()->toArray();
+
+        $finalOutput = array();
+        $toBeShownAbsentData = 'required data was not found';
+        $howManyDaysInAMonth = cal_days_in_month(CAL_GREGORIAN, $request->month, $request->year);
+        for ($daysInAMonth = 1; $daysInAMonth <= $howManyDaysInAMonth; $daysInAMonth ++)
+        {
+            foreach ($dengueDistrictYearNumber as $data)
+            {
+                if ($data->date == $daysInAMonth)
+                {
+                    $finalOutput[$daysInAMonth] = $data->number;
+                }
+                if (!isset($finalOutput[$daysInAMonth]))
+                {
+                    $finalOutput[$daysInAMonth] = $toBeShownAbsentData;
+                }
+
+            }
+        }
+
+        return ['result' => 'true', 'data' => $finalOutput];
+
+
+//        return ['result' => 'true', 'yearlyDengueDistrictNumber' => $dengueDistrictYearNumber];
+    }
+
+    private function dengueFatalityRate(Request $request)
+    {
+        $checkIfConditionExists = DB::table('fatalityRate')
+            ->where('date', '=', $request->year)
+            ->exists();
+
+        if ($checkIfConditionExists == false)
+        {
+            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+        }
+        $dengueFatalityRate = DB::table('fatalityRate')
+            ->where('date', '=', $request->year)
+            ->first();
+
+        return ['result' => 'true', 'data' => $dengueFatalityRate->fatalityRate];
+    }
+
+    private function dengueYearNumber(Request $request)
+    {
+        $this->validate(request(), [
+            'year' => 'required',
+        ]);
+
+        $checkIfDataExists = DB::table('dengue')
+            ->whereYear('date', $request->year)
+            ->exists();
+
+        if ($checkIfDataExists == false)
+        {
+            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+        }
+
+        $monthlyDataInAYearOfDengue = DB::table('dengue')
+            ->select(DB::raw("count(district) number, district"))
+            ->whereYear('date', $request->year)
+            ->groupBy(DB::raw("year(date), district"))
+            ->get()->toArray();
+
+        $finalOutput = array();
+
+        foreach ($monthlyDataInAYearOfDengue as $data)
+        {
+            $finalOutput[$data->district] = $data->number;
+        }
+
+        return ['result' => 'true', 'data' => $finalOutput];
     }
 
     private function dengueDistrictMonthNumber(Request $request)
@@ -56,125 +154,25 @@ class dengueController extends Controller {
 
         $finalOutput = array();
         $toBeShownAbsentData = 0;
-        for($monthsInAYear = 1; $monthsInAYear < 13; $monthsInAYear++)
+        for ($monthsInAYear = 1; $monthsInAYear < 13; $monthsInAYear ++)
         {
-            foreach($dengueDistrictMonthNumber as $data)
+            foreach ($dengueDistrictMonthNumber as $data)
             {
-                if($monthsInAYear == $data->month)
+                if ($monthsInAYear == $data->month)
                 {
                     $finalOutput[$monthsInAYear] = $data->number;
                     break;
                 }
             }
-            if(!isset($finalOutput[$monthsInAYear]))
+            if (!isset($finalOutput[$monthsInAYear]))
             {
                 $finalOutput[$monthsInAYear] = 0;
             }
 
         }
+
         return $finalOutput;
 //        return ['result' => 'true', 'monthlyDengueDistrictNumber' => $dengueDistrictMonthNumber];
-    }
-
-    private function dengueMonthNumber(Request $request)
-    {
-        $this->validate(request(), [
-            'year'  => 'required',
-            'month' => 'required'
-        ]);
-
-        $checkIfDataExists = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->whereMonth('date', $request->month)
-            ->exists();
-
-        if ($checkIfDataExists == false)
-        {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
-        }
-        $dengueMonthNumber = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->whereMonth('date', $request->month)
-            ->groupBy(DB::raw("year(date)", "month(date)"))
-            ->count('district');
-
-
-    }
-
-    private function dengueDistrictYearNumber(Request $request)
-    {
-        $this->validate(request(), [
-            'year'     => 'required',
-            'district' => 'required'
-        ]);
-
-        $checkIfDataExists = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->where('district', '=', $request->district)
-            ->exists();
-
-        if ($checkIfDataExists == false)
-        {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
-        }
-        $dengueDistrictYearNumber = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->where('district', '=', $request->district)
-            ->groupBy(DB::raw("year(date)", 'district'))
-            ->count('district');
-
-        return ['result' => 'true', 'yearlyDengueDistrictNumber' => $dengueDistrictYearNumber];
-    }
-    public function dengueFatalityRate(Request $request)
-    {
-        $this->validate(request(), [
-            'year' => 'required',
-        ]);
-
-        $checkIfConditionExists = DB::table('fatalityRate')
-            ->where('date', '=', $request->year)
-            ->exists();
-
-        if ($checkIfConditionExists == false)
-        {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
-        }
-        $dengueFatalityRate = DB::table('fatalityRate')
-            ->where('date', '=', $request->year)
-            ->first();
-
-        return ['result' => 'true', 'dengueFatalityRate' => $dengueFatalityRate->fatalityRate];
-    }
-
-    private function dengueYearNumber(Request $request)
-    {
-        $this->validate(request(), [
-            'year' => 'required',
-        ]);
-
-        $checkIfDataExists = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->exists();
-
-        if ($checkIfDataExists == false)
-        {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
-        }
-
-        $monthlyDataInAYearOfDengue = DB::table('dengue')
-            ->select(DB::raw("count(district) number, district"))
-            ->whereYear('date', $request->year)
-            ->groupBy(DB::raw("year(date), district"))
-            ->get()->toArray();
-
-        $finalOutput = array();
-
-        foreach ($monthlyDataInAYearOfDengue as $data)
-        {
-            $finalOutput[$data->district]=$data->number;
-        }
-
-        return ['result' => 'true', 'data' => $finalOutput];
     }
 
 }
