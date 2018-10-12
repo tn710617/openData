@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class rainController extends Controller
+class rainfallController extends Controller
 {
 
     public function rainfall(Request $request)
@@ -20,7 +20,7 @@ class rainController extends Controller
 
         elseif(isset($year) && isset($district) && !isset($month))
         {
-            return $this->yearDistrictSumRainfall($request);
+            return $this->monthlyDistrictSumRainfall($request);
         }
 
         elseif(isset($year) && isset($month) && !isset($district))
@@ -67,7 +67,7 @@ class rainController extends Controller
         return ['result' => 'true', 'monthlyDistrictSumRainfall' => $monthDistrictSumRainfall];
     }
 
-    private function yearDistrictSumRainfall(Request $request)
+    private function monthlyDistrictSumRainfall(Request $request)
     {
         $this->validate(request(), [
             'year'     => 'required',
@@ -83,13 +83,33 @@ class rainController extends Controller
         {
             return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
         }
-        $yearDistrictSumRainfall = DB::table('rainfall')
+        $monthlyDistrictSumRainfall = DB::table('rainfall')
+            ->select(DB::raw('month(date) month, sum(rainfall) rainfall'))
             ->whereYear('date', $request->year)
-            ->where('district', '=', $request->district)
-            ->groupBy(DB::raw("year(date)"))
-            ->sum('rainfall');
+            ->where('district', $request->district)
+            ->groupBy(DB::raw('year(date), month(date)'))
+            ->get()->toArray();
 
-        return ['result' => 'true', 'yearlyDistrictSumRainfall' => $yearDistrictSumRainfall];
+        $confirmedMissingDataValue = 0;
+        $toBeShownMissingData = 'required data was not found';
+        $finalOutput = array();
+
+        for($monthsInAYear = 1; $monthsInAYear < 13; $monthsInAYear++)
+        {
+            foreach($monthlyDistrictSumRainfall as $data)
+            {
+                if($monthsInAYear == $data->month)
+                {
+                    $finalOutput[$monthsInAYear] = $data->rainfall;
+                }
+            }
+            if(!isset($finalOutput[$monthsInAYear]))
+            {
+                $finalOutput[$monthsInAYear] = (($monthsInAYear < 9 && $request->year == 2015) ? $toBeShownMissingData: $confirmedMissingDataValue);
+            }
+        }
+
+        return ['result' => 'true', 'data' => $finalOutput];
     }
 
     private function monthSumRainfall(Request $request)
@@ -161,7 +181,8 @@ class rainController extends Controller
         $yearlySumRainfall = $yearSumRainfallForAllOfTheDistricts / $districtNumberInDesignatedYear;
 
 
-        return ['result' => 'true', 'yearlySumRainfall' => $yearlySumRainfall];
+        return ['result' => 'true', 'data' => $yearlySumRainfall];
     }
+
 
 }
