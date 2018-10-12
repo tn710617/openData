@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,15 +75,15 @@ class rainfallController extends Controller
             'district' => 'required'
         ]);
 
-        $checkIfDataExists = DB::table('rainfall')
-            ->whereYear('date', $request->year)
-            ->where('district', '=', $request->district)
-            ->exists();
-
-        if ($checkIfDataExists == false)
-        {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
-        }
+//        $checkIfDataExists = DB::table('rainfall')
+//            ->whereYear('date', $request->year)
+//            ->where('district', '=', $request->district)
+//            ->exists();
+//
+//        if ($checkIfDataExists == false)
+//        {
+//            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
+//        }
         $monthlyDistrictSumRainfall = DB::table('rainfall')
             ->select(DB::raw('month(date) month, sum(rainfall) rainfall'))
             ->whereYear('date', $request->year)
@@ -90,8 +91,15 @@ class rainfallController extends Controller
             ->groupBy(DB::raw('year(date), month(date)'))
             ->get()->toArray();
 
-        $confirmedMissingDataValue = 0;
-        $toBeShownMissingData = 'required data was not found';
+
+        $toBeShownAbsentData = 'Required data was not found';
+        $confirmedMissingData = 0;
+
+        $now = Carbon::now();
+        $currentMonth = $now->month;
+        $currentYear = $now->year;
+        $currentDay = $now->day;
+
         $finalOutput = array();
 
         for($monthsInAYear = 1; $monthsInAYear < 13; $monthsInAYear++)
@@ -105,7 +113,8 @@ class rainfallController extends Controller
             }
             if(!isset($finalOutput[$monthsInAYear]))
             {
-                $finalOutput[$monthsInAYear] = (($monthsInAYear < 9 && $request->year == 2015) ? $toBeShownMissingData: $confirmedMissingDataValue);
+                $finalOutput[$monthsInAYear] = (($request->year == 2015) && ($monthsInAYear > $currentMonth) ) || ($request->year > $currentYear) ||
+                ((($monthsInAYear > $currentMonth) && ($request->year == $currentYear))) ? $toBeShownAbsentData : $confirmedMissingData;
             }
         }
 

@@ -48,7 +48,7 @@ class dengueController extends Controller {
 //
 //        if ($checkIfDataExists == false)
 //        {
-//            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+//            return ['result' => 'false', 'data' => 'The required data was not found'];
 //        }
         $dengueDistrictYearNumber = DB::table('dengue')
             ->select(DB::raw('day(date) date, count(district) number'))
@@ -59,7 +59,7 @@ class dengueController extends Controller {
             ->get()->toArray();
 
 
-        $toBeShownAbsentData = 'Required data was not found';
+        $toBeShownAbsentData = 'The required data was not found';
         $confirmedMissingData = 0;
 
         $now = Carbon::now();
@@ -81,7 +81,7 @@ class dengueController extends Controller {
             if (!isset($finalOutput[$daysInAMonth]))
             {
                 $finalOutput[$daysInAMonth] = ($request->year < 2015) || ($request->year > $currentYear) ||
-                ((($request->month > $currentMonth) && ($request->year == $currentYear) && ($daysInAMonth > $currentDay))) ? $toBeShownAbsentData : $confirmedMissingData;
+                ((($request->month == $currentMonth) && ($request->year == $currentYear) && ($daysInAMonth > $currentDay))) ? $toBeShownAbsentData : $confirmedMissingData;
             }
 
         }
@@ -100,7 +100,7 @@ class dengueController extends Controller {
 
         if ($checkIfConditionExists == false)
         {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+            return ['result' => 'false', 'data' => 'The required data was not found'];
         }
         $dengueFatalityRate = DB::table('fatalityRate')
             ->where('date', '=', $request->year)
@@ -121,7 +121,7 @@ class dengueController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+            return ['result' => 'false', 'data' => 'The required data was not found'];
         }
 
         $monthlyDataInAYearOfDengue = DB::table('dengue')
@@ -155,7 +155,7 @@ class dengueController extends Controller {
 //
 //        if ($checkIfDataExists == false)
 //        {
-//            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+//            return ['result' => 'false', 'data' => 'The required data was not found'];
 //        }
         $dengueDistrictMonthNumber = DB::table('dengue')
             ->select(DB::raw("count(district) number, month(date) month"))
@@ -170,7 +170,7 @@ class dengueController extends Controller {
         $currentYear = $now->year;
 
         $finalOutput = array();
-        $toBeShownAbsentData = 'Required data was not found';
+        $toBeShownAbsentData = 'The required data was not found';
         $confirmedMissingData = 0;
         for ($monthsInAYear = 1; $monthsInAYear < 13; $monthsInAYear ++)
         {
@@ -190,8 +190,8 @@ class dengueController extends Controller {
 
         }
 
-        return $finalOutput;
-//        return ['result' => 'true', 'monthlyDengueDistrictNumber' => $dengueDistrictMonthNumber];
+//        return $finalOutput;
+        return ['result' => 'true', 'data' => $finalOutput];
     }
 
 }
