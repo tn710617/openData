@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,12 +18,10 @@ class dengueController extends Controller {
         if (isset($year) && !isset($month) && isset($district))
         {
             return $this->dengueDistrictMonthNumber($request);
-        }
-        elseif (isset($year) && ($fatality == 'fatality'))
+        } elseif (isset($year) && ($fatality == 'fatality'))
         {
             return $this->dengueFatalityRate($request);
-        }
-        elseif (isset($year) && (isset($month)) && (isset($district)))
+        } elseif (isset($year) && (isset($month)) && (isset($district)))
         {
             return $this->dengueDistrictDailyNumber($request);
         } elseif (isset($year) && (!isset($month)) && (!isset($district)))
@@ -130,20 +129,21 @@ class dengueController extends Controller {
 
     private function dengueDistrictMonthNumber(Request $request)
     {
+
         $this->validate(request(), [
             'year'     => 'required',
             'district' => 'required'
         ]);
 
-        $checkIfDataExists = DB::table('dengue')
-            ->whereYear('date', $request->year)
-            ->where('district', '=', $request->district)
-            ->exists();
-
-        if ($checkIfDataExists == false)
-        {
-            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
-        }
+//        $checkIfDataExists = DB::table('dengue')
+//            ->whereYear('date', $request->year)
+//            ->where('district', '=', $request->district)
+//            ->exists();
+//
+//        if ($checkIfDataExists == false)
+//        {
+//            return ['result' => 'false', 'data' => 'The queried data doesn\'t exists'];
+//        }
         $dengueDistrictMonthNumber = DB::table('dengue')
             ->select(DB::raw("count(district) number, month(date) month"))
             ->whereYear("date", $request->year)
@@ -152,8 +152,13 @@ class dengueController extends Controller {
             ->get()->toArray();
 //        return $dengueDistrictMonthNumber;
 
+        $now = Carbon::now();
+        $currentMonth = $now->month;
+        $currentYear = $now->year;
+
         $finalOutput = array();
-        $toBeShownAbsentData = 0;
+        $toBeShownAbsentData = 'Required data was not found';
+        $confirmedMissingData = 0;
         for ($monthsInAYear = 1; $monthsInAYear < 13; $monthsInAYear ++)
         {
             foreach ($dengueDistrictMonthNumber as $data)
@@ -166,7 +171,8 @@ class dengueController extends Controller {
             }
             if (!isset($finalOutput[$monthsInAYear]))
             {
-                $finalOutput[$monthsInAYear] = 0;
+                $finalOutput[$monthsInAYear] = ((($request->year < 2015) || (($request->year >= $currentYear) &&
+                        ($monthsInAYear > $currentMonth)))) ? $toBeShownAbsentData : $confirmedMissingData;
             }
 
         }
