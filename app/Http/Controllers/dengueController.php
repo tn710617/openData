@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class dengueController extends Controller {
 
@@ -35,11 +36,22 @@ class dengueController extends Controller {
 
     private function dengueDistrictDailyNumber(Request $request)
     {
-        $this->validate(request(), [
+        $errors = ["month.between" => "Provided condition is incorrect"];
+        $validator = validator::make(request()->all(), [
             'year'     => 'required',
-            'month'    => 'required',
+            'month'    => 'required|integer|between:1,12',
             'district' => 'required'
-        ]);
+        ], $errors);
+        if ($validator->fails())
+        {
+            return ['result' => 'false', 'data' => $validator->errors()->first()];
+        }
+//        $this->validate(request(), [
+//                'year'     => 'required',
+//                'month'    => 'required|integer|between:1,12',
+//                'district' => 'required'
+//            ]
+//        );
 //        $checkIfDataExists = DB::table('dengue')
 //            ->whereYear('date', $request->year)
 //            ->whereMonth('date', $request->month)
