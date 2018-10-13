@@ -20,8 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/dengue', 'dengueController@dengue');
 Route::post('/dengueFatalityRate', 'OpenDataController@dengueFatalityRate');
 Route::post('/rainfall', 'rainfallController@rainfall');
-Route::post('/temperature', 'temperatureController@temperature');
-Route::post('/humidity', 'humidityController@humidity');
+Route::post('/temperatureAndHumidity', 'temperatureAndHumidityController@temperatureAndHumidity');
 
 
 

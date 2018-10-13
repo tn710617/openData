@@ -36,24 +36,6 @@ class temperatureController extends Controller
             return ['result' => 'false', 'memo' => 'Provided condition is not enough'];
         }
     }
-
-    private function yearAverageTemperature (Request $request)
-    {
-        $checkIfDataExists = DB::table('temperatureAndHumidity')
-            ->whereYear('date', $request->year)->exists();
-
-        if($checkIfDataExists != true)
-        {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exist'];
-        }
-
-        $yearAverageTemperature = DB::table('temperatureAndHumidity')
-            ->whereYear('date', $request->year)
-            ->groupBy(DB::raw("year(date)"))
-            ->avg("temperature");
-        return ['result' => 'true', 'Yearly average temperature' => $yearAverageTemperature];
-    }
-
     private function monthAverageTemperature (Request $request)
     {
         $checkIfDataExists = DB::table('temperatureAndHumidity')
