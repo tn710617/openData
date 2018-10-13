@@ -15,14 +15,11 @@ class rainfallController extends Controller {
         $district = $request->district;
         if (isset($year) && isset($month) && isset($district))
         {
-            return $this->monthDistrictSumRainfall($request);
+            return $this->dailyDistrictSumRainfall($request);
         } elseif (isset($year) && isset($district) && !isset($month))
         {
             return $this->monthlyDistrictSumRainfall($request);
-        } elseif (isset($year) && isset($month) && !isset($district))
-        {
-            return $this->monthSumRainfall($request);
-        } elseif (isset($year) && !isset($month) && !isset($district))
+        }  elseif (isset($year) && !isset($month) && !isset($district))
         {
             return $this->yearSumRainfall($request);
         } else
@@ -32,7 +29,7 @@ class rainfallController extends Controller {
     }
 
 
-    private function monthDistrictSumRainfall(Request $request)
+    private function dailyDistrictSumRainfall(Request $request)
     {
         $this->validate(request(), [
             'year'     => 'required',
