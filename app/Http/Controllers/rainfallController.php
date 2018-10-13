@@ -56,7 +56,7 @@ class rainfallController extends Controller
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
+            return ['result' => 'false', 'memo' => 'The required data was not found'];
         }
         $monthDistrictSumRainfall = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -82,7 +82,7 @@ class rainfallController extends Controller
 //
 //        if ($checkIfDataExists == false)
 //        {
-//            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
+//            return ['result' => 'false', 'memo' => 'The required data was not found'];
 //        }
         $monthlyDistrictSumRainfall = DB::table('rainfall')
             ->select(DB::raw('month(date) month, sum(rainfall) rainfall'))
@@ -135,7 +135,7 @@ class rainfallController extends Controller
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
+            return ['result' => 'false', 'memo' => 'The required data was not found'];
         }
         $monthSumRainfallForAllOfTheDistricts = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -171,7 +171,7 @@ class rainfallController extends Controller
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The queried data doesn\'t exists'];
+            return ['result' => 'false', 'memo' => 'The required data was not found'];
         }
         $yearSumRainfallForAllOfTheDistricts = DB::table('rainfall')
             ->whereYear('date', $request->year)
