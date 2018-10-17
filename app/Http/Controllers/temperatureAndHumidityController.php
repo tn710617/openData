@@ -25,7 +25,7 @@ class temperatureAndHumidityController extends Controller
 
         else
         {
-            return ['result' => 'false', 'memo' => 'Provided condition is incorrect'];
+            return ['result' => 'false', 'data' => 'Provided condition is incorrect'];
         }
     }
 
@@ -36,7 +36,7 @@ class temperatureAndHumidityController extends Controller
 
         if($checkIfDataExists != true)
         {
-            return ['result' => 'false', 'memo' => 'The required data was not found'];
+            return ['result' => 'false', 'data' => 'The required data was not found'];
         }
 
         $yearlyAverageHumidity = DB::table('temperatureAndHumidity')
@@ -53,7 +53,7 @@ class temperatureAndHumidityController extends Controller
 
         if($checkIfDataExists != true)
         {
-            return ['result' => 'false', 'memo' => 'The required data was not found'];
+            return ['result' => 'false', 'data' => 'The required data was not found'];
         }
 
         $yearAverageTemperature = DB::table('temperatureAndHumidity')

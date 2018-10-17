@@ -19,12 +19,12 @@ class rainfallController extends Controller {
         } elseif (isset($year) && isset($district) && !isset($month))
         {
             return $this->monthlyDistrictSumRainfall($request);
-        }  elseif (isset($year) && !isset($month) && !isset($district))
+        } elseif (isset($year) && !isset($month) && !isset($district))
         {
             return $this->yearSumRainfall($request);
         } else
         {
-            return ["result" => "false", "memo" => "Provided condition is incorrect"];
+            return ["result" => "false", "data" => "Provided condition is incorrect"];
         }
     }
 
@@ -45,7 +45,7 @@ class rainfallController extends Controller {
 //
 //        if ($checkIfDataExists == false)
 //        {
-//            return ['result' => 'false', 'memo' => 'The required data was not found'];
+//            return ['result' => 'false', 'data' => 'The required data was not found'];
 //        }
         $dailyDistrictSumRainfall = DB::table('rainfall')
             ->select(DB::raw('day(date) date, sum(rainfall)rainfall'))
@@ -102,7 +102,7 @@ class rainfallController extends Controller {
 
         if ($checkIfDataExists == false)
         {
-            return ['result' => 'false', 'memo' => 'The required data was not found'];
+            return ['result' => 'false', 'data' => 'The required data was not found'];
         }
         $yearSumRainfallForAllOfTheDistricts = DB::table('rainfall')
             ->whereYear('date', $request->year)
@@ -139,7 +139,7 @@ class rainfallController extends Controller {
 //
 //        if ($checkIfDataExists == false)
 //        {
-//            return ['result' => 'false', 'memo' => 'The required data was not found'];
+//            return ['result' => 'false', 'data' => 'The required data was not found'];
 //        }
         $monthlyDistrictSumRainfall = DB::table('rainfall')
             ->select(DB::raw('month(date) month, sum(rainfall) rainfall'))
