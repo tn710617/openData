@@ -17,10 +17,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/dengue', 'dengueController@dengue');
-Route::post('/dengueFatalityRate', 'OpenDataController@dengueFatalityRate');
-Route::post('/rainfall', 'rainfallController@rainfall');
-Route::post('/temperatureAndHumidity', 'temperatureAndHumidityController@temperatureAndHumidity');
+Route::post('/dengue', 'dengueController@dengue')->middleware('cors');
+Route::post('/dengueFatalityRate', 'OpenDataController@dengueFatalityRate')->middleware('cors');
+Route::post('/rainfall', 'rainfallController@rainfall')->middleware('cors');
+Route::post('/temperatureAndHumidity', 'temperatureAndHumidityController@temperatureAndHumidity')->middleware('cors');
+Route::post('/breakdown', 'TotalController@breakdown')->middleware('cors');
 
 
 

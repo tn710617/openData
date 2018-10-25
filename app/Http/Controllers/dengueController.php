@@ -46,22 +46,7 @@ class dengueController extends Controller {
         {
             return ['result' => 'false', 'data' => $validator->errors()->first()];
         }
-//        $this->validate(request(), [
-//                'year'     => 'required',
-//                'month'    => 'required|integer|between:1,12',
-//                'district' => 'required'
-//            ]
-//        );
-//        $checkIfDataExists = DB::table('dengue')
-//            ->whereYear('date', $request->year)
-//            ->whereMonth('date', $request->month)
-//            ->where('district', '=', $request->district)
-//            ->exists();
-//
-//        if ($checkIfDataExists == false)
-//        {
-//            return ['result' => 'false', 'data' => 'The required data was not found'];
-//        }
+
         $dengueDistrictYearNumber = DB::table('dengue')
             ->select(DB::raw('day(date) date, count(district) number'))
             ->whereYear('date', $request->year)
@@ -101,7 +86,6 @@ class dengueController extends Controller {
         return ['result' => 'true', 'data' => $finalOutput];
 
 
-//        return ['result' => 'true', 'yearlyDengueDistrictNumber' => $dengueDistrictYearNumber];
     }
 
     private function dengueFatalityRate(Request $request)
