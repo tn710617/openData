@@ -66,7 +66,7 @@ class rainfallController extends Controller {
         $finalOutput = array();
         $howManyDaysInAMonth = cal_days_in_month(CAL_GREGORIAN, $request->month, $request->year);
 
-        for ($daysInAMonth = 1; $daysInAMonth < $howManyDaysInAMonth; $daysInAMonth ++)
+        for ($daysInAMonth = 1; $daysInAMonth < ($howManyDaysInAMonth +1); $daysInAMonth ++)
         {
             foreach ($dailyDistrictSumRainfall as $data)
             {
